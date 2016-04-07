@@ -28,6 +28,6 @@ class DriverLogApplication extends Application {
   }
 
   def getDatabase() = {
-    manager.getDatabase("dbDriverLog")
+    manager.getDatabase("driverlog")
   }
 }

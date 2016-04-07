@@ -52,9 +52,9 @@ class MainActivity extends AppCompatActivity {
   }
 
   class MyLocationListener(view: View, locationManager: LocationManager) extends LocationListener {
-    override def onProviderEnabled(s: String): Unit = ???
+    override def onProviderEnabled(s: String): Unit = {}
 
-    override def onStatusChanged(s: String, i: Int, bundle: Bundle): Unit = ???
+    override def onStatusChanged(s: String, i: Int, bundle: Bundle): Unit = {}
 
     override def onLocationChanged(knownLocation: Location): Unit = {
       val gson: Gson = new Gson()
@@ -69,18 +69,19 @@ class MainActivity extends AppCompatActivity {
         val properties = new java.util.HashMap[String, AnyRef]
         properties.put("type", "log")
         properties.put("log_id", (application.getDatabase.getLastSequenceNumber + 1).toString)
-        properties.put("start_location", lastLocation)
-        properties.put("end_location", knownLocation)
+        properties.put("start_location", gson.toJson(lastLocation))
+        properties.put("end_location", gson.toJson(knownLocation))
         revision.setUserProperties(properties)
         revision.save()
+        sharedPreferences.edit().remove(LAST_LOCATION_KEY).apply
         Snackbar.make(view, "Made new log entry", Snackbar.LENGTH_LONG).show
       } else {
-        sharedPreferences.edit().putString(LAST_LOCATION_KEY, locationJson).apply()
+        sharedPreferences.edit().putString(LAST_LOCATION_KEY, locationJson).apply
         Snackbar.make(view, "Stored location", Snackbar.LENGTH_LONG).show
       }
       locationManager.removeUpdates(this)
     }
 
-    override def onProviderDisabled(s: String): Unit = ???
+    override def onProviderDisabled(s: String): Unit = {}
   }
 }
