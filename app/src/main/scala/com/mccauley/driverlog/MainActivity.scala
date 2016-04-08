@@ -12,6 +12,8 @@ import android.support.v7.widget.Toolbar
 import android.view.{MenuItem, Menu, View}
 import com.couchbase.lite.{UnsavedRevision, Document}
 import com.google.gson.Gson
+import com.mccauley.driverlog.database.{TripHelper, Trip}
+import org.joda.time.DateTime
 
 class MainActivity extends AppCompatActivity {
   val LAST_LOCATION_KEY = "LAST_LOCATION"
@@ -64,17 +66,9 @@ class MainActivity extends AppCompatActivity {
       if (lastLocationJson.isDefined) {
         val lastLocation: Location = gson.fromJson(lastLocationJson.get, knownLocation.getClass)
         val application = getApplication.asInstanceOf[DriverLogApplication]
-        val document: Document = application.getDatabase.createDocument
-        val revision: UnsavedRevision = document.createRevision
-        val properties = new java.util.HashMap[String, AnyRef]
-        properties.put("type", "log")
-        properties.put("log_id", (application.getDatabase.getLastSequenceNumber + 1).toString)
-        properties.put("start_location", gson.toJson(lastLocation))
-        properties.put("end_location", gson.toJson(knownLocation))
-        revision.setUserProperties(properties)
-        revision.save()
+        TripHelper.saveTrip(application.getDatabase(), lastLocation, knownLocation)
         sharedPreferences.edit().remove(LAST_LOCATION_KEY).apply
-        Snackbar.make(view, "Made new log entry", Snackbar.LENGTH_LONG).show
+        Snackbar.make(view, "Made new trip entry", Snackbar.LENGTH_LONG).show
       } else {
         sharedPreferences.edit().putString(LAST_LOCATION_KEY, locationJson).apply
         Snackbar.make(view, "Stored location", Snackbar.LENGTH_LONG).show
