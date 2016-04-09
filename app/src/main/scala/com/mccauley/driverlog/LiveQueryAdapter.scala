@@ -15,17 +15,12 @@ class LiveQueryAdapter extends BaseAdapter {
     this()
     this.context = context
     this.query = query
-    query.addChangeListener(new LiveQuery.ChangeListener() {
-      def changed(event: LiveQuery.ChangeEvent) {
-        context.asInstanceOf[Activity].runOnUiThread(new Runnable() {
-          def run {
-            enumerator = event.getRows
-            notifyDataSetChanged
-          }
-        })
-      }
-    })
+    query.addChangeListener(new LiveQueryChangeListener(context.asInstanceOf[Activity], this))
     query.start
+  }
+
+  def setEnumerator(queryEnumerator: QueryEnumerator): Unit = {
+    enumerator = queryEnumerator
   }
 
   def getCount: Int = {

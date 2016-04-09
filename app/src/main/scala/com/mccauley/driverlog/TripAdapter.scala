@@ -7,7 +7,7 @@ import android.widget.TextView
 import com.couchbase.lite.{LiveQuery, Document}
 import com.mccauley.driverlog.database.TripHelper
 
-class TripAdapter(context: Context, query: LiveQuery) extends LiveQueryAdapter {
+class TripAdapter(context: Context, query: LiveQuery) extends LiveQueryAdapter(context, query) {
   var geocoder: Geocoder = null
 
   override def getView(position: Int, convertView: View, parent: ViewGroup): View = {

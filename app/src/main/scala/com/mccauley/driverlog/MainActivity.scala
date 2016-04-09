@@ -17,6 +17,7 @@ import org.joda.time.DateTime
 
 class MainActivity extends AppCompatActivity {
   val LAST_LOCATION_KEY = "LAST_LOCATION"
+
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
@@ -29,7 +30,7 @@ class MainActivity extends AppCompatActivity {
     fab.setOnClickListener(new View.OnClickListener() {
       def onClick(view: View) {
         val criteria = new Criteria()
-        criteria.setAccuracy(Criteria.ACCURACY_COARSE)
+        criteria.setAccuracy(Criteria.ACCURACY_FINE)
         val provider = locationManager.getBestProvider(criteria, true)
         if (provider != null) {
           locationManager.requestLocationUpdates(provider, 1000, 0, listener, getMainLooper)
@@ -78,4 +79,5 @@ class MainActivity extends AppCompatActivity {
 
     override def onProviderDisabled(s: String): Unit = {}
   }
+
 }

@@ -13,5 +13,6 @@ class Trip(_startLocation: Location, _endLocation: Location) {
   }
 
   def startLocation = _startLocation
+
   def endLocation = _endLocation
 }
