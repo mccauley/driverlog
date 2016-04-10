@@ -1,12 +1,10 @@
 package com.mccauley.driverlog
 
-import java.math.MathContext
-
 import android.content.Context
 import android.location.{Address, Geocoder, Location}
-import android.view.{LayoutInflater, ViewGroup, View}
+import android.view.{LayoutInflater, View, ViewGroup}
 import android.widget.TextView
-import com.couchbase.lite.{LiveQuery, Document}
+import com.couchbase.lite.{Document, LiveQuery}
 import com.mccauley.driverlog.database.TripHelper
 import org.joda.time.Duration
 
