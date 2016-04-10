@@ -8,10 +8,12 @@
 
     <TextView
         android:id="@+id/duration"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="4dp"
         android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_weight=".2"
         tools:text = "1h 25m" />
 
     <View
@@ -21,12 +23,12 @@
         />
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:padding="4dp"
         android:orientation="vertical"
         android:layout_gravity="center"
-        android:layout_weight="1">
+        android:layout_weight=".6">
 
         <TextView
             android:id="@+id/start_location"
@@ -55,10 +57,12 @@
 
     <TextView
         android:id="@+id/distance"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
+        android:gravity="center"
         android:padding="4dp"
+        android:layout_weight=".2"
         tools:text = "34.6mi"/>
 
 </LinearLayout>
