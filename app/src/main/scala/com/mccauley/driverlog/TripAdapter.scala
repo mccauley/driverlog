@@ -36,24 +36,25 @@ class TripAdapter(context: Context, query: LiveQuery) extends LiveQueryAdapter(c
     view
   }
 
-  def getDistanceDescription(distance: Double): String = {
+  private def getDistanceDescription(distance: Double): String = {
     BigDecimal.apply(distance).setScale(1, RoundingMode.DOWN).toString().concat("mi")
   }
 
-  def getDurationDescription(duration: Duration): String = {
+  private def getDurationDescription(duration: Duration): String = {
     val hours = duration.getStandardHours
-    val minutes = duration.getStandardMinutes
+    var minutes = duration.getStandardMinutes
     var durationDesc = ""
     if (hours > 0) {
       durationDesc = String.valueOf(hours).concat("h ")
     }
     if (minutes > 0) {
+      minutes = minutes - (hours * 60)
       durationDesc = durationDesc.concat(String.valueOf(minutes)).concat("m")
     }
     durationDesc.trim
   }
 
-  def getLocationDescription(context: Context, location: Location): String = {
+  private def getLocationDescription(context: Context, location: Location): String = {
     if (geocoder == null) {
       geocoder = new Geocoder(context)
     }
