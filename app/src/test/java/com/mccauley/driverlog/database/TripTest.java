@@ -27,13 +27,11 @@ public class TripTest {
         MockitoAnnotations.initMocks(this);
         when(startLocation.getTime()).thenReturn(DateTime.now().minusHours(1).getMillis());
         when(endLocation.getTime()).thenReturn(DateTime.now().getMillis());
-        testObject = new Trip(startLocation, endLocation);
+        testObject = new Trip(startLocation, endLocation, 10000.0f);
     }
 
     @Test
     public void testDistance() throws Exception {
-        when(startLocation.distanceTo(endLocation)).thenReturn(10000.0f);
-
         Double distance = testObject.distance();
 
         Assert.assertEquals(10000.0f/1609.344, distance);

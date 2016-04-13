@@ -11,6 +11,7 @@ import org.joda.time.DateTime
 object TripHelper {
   val START_LOCATION_FIELD: String = "startLocation"
   val END_LOCATION_FIELD: String = "endLocation"
+  val DISTANCE_FIELD: String = "distance"
   val DOC_TYPE = "trip"
   val VIEW_NAME = "trips"
 
@@ -33,7 +34,7 @@ object TripHelper {
     view.createQuery.toLiveQuery
   }
 
-  def saveTrip(database: Database, startLocation: Location, endLocation: Location): Document = {
+  def saveTrip(database: Database, startLocation: Location, endLocation: Location, distance: Double): Document = {
     val document: Document = database.createDocument
     val revision: UnsavedRevision = document.createRevision
     val properties = new java.util.HashMap[String, AnyRef]
@@ -44,6 +45,7 @@ object TripHelper {
     properties.put("created_at", String.valueOf(DateTime.now().getMillis))
     properties.put(START_LOCATION_FIELD, gson.toJson(startLocationLite))
     properties.put(END_LOCATION_FIELD, gson.toJson(endLocationLite))
+    properties.put(DISTANCE_FIELD, double2Double(distance))
     revision.setUserProperties(properties)
     revision.save()
     document
@@ -57,6 +59,7 @@ object TripHelper {
     val locationType = new TypeToken[LocationLite] {}.getType
     val startLocation: LocationLite = gson.fromJson(properties.get(START_LOCATION_FIELD).asInstanceOf[String], locationType).asInstanceOf[LocationLite]
     val endLocation: LocationLite = gson.fromJson(properties.get(END_LOCATION_FIELD).asInstanceOf[String], locationType).asInstanceOf[LocationLite]
-    new Trip(startLocation.toLocation(), endLocation.toLocation())
+    val distance: Double = properties.get(DISTANCE_FIELD).asInstanceOf[Double]
+    new Trip(startLocation.toLocation(), endLocation.toLocation(), distance)
   }
 }

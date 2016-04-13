@@ -1,22 +1,27 @@
 package com.mccauley.driverlog
 
-import java.lang.reflect.Type
-
-import android.content.{SharedPreferences, Context}
-import android.location.{LocationListener, Location, Criteria, LocationManager}
+import android.content.{Context, SharedPreferences}
+import android.location.{Criteria, Location, LocationListener, LocationManager}
 import android.os.Bundle
 import android.preference.PreferenceManager
-import android.support.design.widget.{Snackbar, FloatingActionButton}
+import android.support.design.widget.{FloatingActionButton, Snackbar}
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
-import android.view.{MenuItem, Menu, View}
-import com.couchbase.lite.{UnsavedRevision, Document}
+import android.view.{Menu, MenuItem, View}
 import com.google.gson.Gson
-import com.mccauley.driverlog.database.{TripHelper, Trip}
-import org.joda.time.DateTime
+import com.mccauley.driverlog.database.TripHelper
 
 class MainActivity extends AppCompatActivity {
+  val START_LOCATION_KEY = "START_LOCATION"
   val LAST_LOCATION_KEY = "LAST_LOCATION"
+  val LAST_DISTANCE_KEY = "LAST_DISTANCE"
+  val TRIP_BEING_LOGGED_KEY = "TRIP_BEING_LOGGED"
+  var tripIsBeingLogged = false
+
+  private def database = {
+    val application = getApplication.asInstanceOf[DriverLogApplication]
+    application.getDatabase()
+  }
 
   override def onCreate(savedInstanceState: Bundle) {
     super.onCreate(savedInstanceState)
@@ -25,6 +30,8 @@ class MainActivity extends AppCompatActivity {
     setSupportActionBar(toolbar)
     val fab: FloatingActionButton = findViewById(R.id.fab).asInstanceOf[FloatingActionButton]
 
+    val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(this)
+    tripIsBeingLogged = Option(sharedPreferences.getString(LAST_LOCATION_KEY, null)).isDefined
     val locationManager = getSystemService(Context.LOCATION_SERVICE).asInstanceOf[LocationManager]
     val listener = new MyLocationListener(fab, locationManager)
     fab.setOnClickListener(new View.OnClickListener() {
@@ -32,10 +39,17 @@ class MainActivity extends AppCompatActivity {
         val criteria = new Criteria()
         criteria.setAccuracy(Criteria.ACCURACY_FINE)
         val provider = locationManager.getBestProvider(criteria, true)
-        if (provider != null) {
-          locationManager.requestLocationUpdates(provider, 1000, 0, listener, getMainLooper)
+        if (!tripIsBeingLogged) {
+          if (provider != null) {
+            tripIsBeingLogged = true
+            locationManager.requestLocationUpdates(provider, 30000, 0, listener, getMainLooper)
+          } else {
+            Snackbar.make(view, "no location stored, location is not enabled", Snackbar.LENGTH_LONG).show
+          }
         } else {
-          Snackbar.make(view, "no location stored, location is not enabled", Snackbar.LENGTH_LONG).show
+          tripIsBeingLogged = false
+          locationManager.removeUpdates(listener)
+          locationManager.requestSingleUpdate(provider, listener, getMainLooper)
         }
       }
     })
@@ -59,22 +73,29 @@ class MainActivity extends AppCompatActivity {
 
     override def onStatusChanged(s: String, i: Int, bundle: Bundle): Unit = {}
 
-    override def onLocationChanged(knownLocation: Location): Unit = {
+    override def onLocationChanged(currentLocation: Location): Unit = {
       val gson: Gson = new Gson()
-      val locationJson = gson.toJson(knownLocation)
+      val locationJson = gson.toJson(currentLocation)
       val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this)
-      val lastLocationJson = Option(sharedPreferences.getString(LAST_LOCATION_KEY, null))
-      if (lastLocationJson.isDefined) {
-        val lastLocation: Location = gson.fromJson(lastLocationJson.get, knownLocation.getClass)
-        val application = getApplication.asInstanceOf[DriverLogApplication]
-        TripHelper.saveTrip(application.getDatabase(), lastLocation, knownLocation)
-        sharedPreferences.edit().remove(LAST_LOCATION_KEY).apply
-        Snackbar.make(view, "Made new trip entry", Snackbar.LENGTH_LONG).show
-      } else {
-        sharedPreferences.edit().putString(LAST_LOCATION_KEY, locationJson).apply
-        Snackbar.make(view, "Stored location", Snackbar.LENGTH_LONG).show
+      val startLocationJson = Option(sharedPreferences.getString(START_LOCATION_KEY, null))
+      if (startLocationJson.isEmpty) {
+        sharedPreferences.edit().putString(START_LOCATION_KEY, locationJson).putString(LAST_LOCATION_KEY, locationJson).apply
+        Snackbar.make(view, "Stored starting location", Snackbar.LENGTH_LONG).show
       }
-      locationManager.removeUpdates(this)
+      var currentDistance = sharedPreferences.getFloat(LAST_DISTANCE_KEY, 0.0f)
+      val previousLocationJson = Option(sharedPreferences.getString(LAST_LOCATION_KEY, null))
+      if (previousLocationJson.isDefined) {
+        val previousLocation: Location = gson.fromJson(previousLocationJson.get, currentLocation.getClass)
+        currentDistance += previousLocation.distanceTo(currentLocation)
+      }
+      if (tripIsBeingLogged) {
+        sharedPreferences.edit().putString(LAST_LOCATION_KEY, gson.toJson(currentLocation)).putFloat(LAST_DISTANCE_KEY, currentDistance).apply()
+      } else {
+        val startLocation: Location = gson.fromJson(startLocationJson.get, currentLocation.getClass)
+        TripHelper.saveTrip(database, startLocation, currentLocation, currentDistance)
+        sharedPreferences.edit().remove(START_LOCATION_KEY).remove(LAST_LOCATION_KEY).remove(LAST_DISTANCE_KEY).apply
+        Snackbar.make(view, "Made new trip entry", Snackbar.LENGTH_LONG).show
+      }
     }
 
     override def onProviderDisabled(s: String): Unit = {}
