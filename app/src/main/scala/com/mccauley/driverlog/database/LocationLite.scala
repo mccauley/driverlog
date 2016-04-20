@@ -2,13 +2,14 @@ package com.mccauley.driverlog.database
 
 import android.location.Location
 
-class LocationLite(var latitude: Double = 0.0, var longitude: Double = 0.0, var time: Long = 0) {
+class LocationLite(var latitude: Double = 0.0, var longitude: Double = 0.0, var time: Long = 0, var description: String = null) {
 
-  def this(location: Location) {
+  def this(location: Location, description: String) {
     this()
-    latitude = location.getLatitude
-    longitude = location.getLongitude
-    time = location.getTime
+    this.latitude = location.getLatitude
+    this.longitude = location.getLongitude
+    this.time = location.getTime
+    this.description = description
   }
 
   def toLocation(): Location = {

@@ -44,12 +44,8 @@ class LiveQueryAdapter extends BaseAdapter {
   }
 
   def updateQueryToShowConflictingRevisions(event: Database.ChangeEvent) {
-    (LiveQueryAdapter.this.context.asInstanceOf[Activity]).runOnUiThread(new Runnable() {
-      def run {
-        query.stop
-        enumerator = query.getRows
-        notifyDataSetChanged
-      }
-    })
+    query.stop
+    enumerator = query.getRows
+    notifyDataSetChanged
   }
 }

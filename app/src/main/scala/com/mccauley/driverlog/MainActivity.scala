@@ -1,7 +1,7 @@
 package com.mccauley.driverlog
 
 import android.content.{Context, SharedPreferences}
-import android.location.{Criteria, Location, LocationListener, LocationManager}
+import android.location._
 import android.os.Bundle
 import android.preference.PreferenceManager
 import android.support.design.widget.{FloatingActionButton, Snackbar}
@@ -16,11 +16,19 @@ class MainActivity extends AppCompatActivity {
   val LAST_LOCATION_KEY = "LAST_LOCATION"
   val LAST_DISTANCE_KEY = "LAST_DISTANCE"
   val TRIP_BEING_LOGGED_KEY = "TRIP_BEING_LOGGED"
-  var tripIsBeingLogged = false
+  private var tripIsBeingLogged = false
+  private var _geocoder: Geocoder = null
 
   private def database = {
     val application = getApplication.asInstanceOf[DriverLogApplication]
     application.getDatabase()
+  }
+
+  private def geocoder = {
+    if (_geocoder == null) {
+      _geocoder = new Geocoder(this)
+    }
+    _geocoder
   }
 
   override def onCreate(savedInstanceState: Bundle) {
@@ -51,8 +59,24 @@ class MainActivity extends AppCompatActivity {
           locationManager.removeUpdates(listener)
           locationManager.requestSingleUpdate(provider, listener, getMainLooper)
         }
+        updateTripIcon
       }
     })
+  }
+
+  override def onResume(): Unit = {
+    super.onResume()
+    updateTripIcon
+  }
+
+  private def updateTripIcon: Unit = {
+    val fab: FloatingActionButton = findViewById(R.id.fab).asInstanceOf[FloatingActionButton]
+    if (fab != null) {
+      fab.setImageDrawable(getDrawable(android.R.drawable.ic_dialog_map))
+      if (tripIsBeingLogged) {
+        fab.setImageDrawable(getDrawable(R.drawable.car))
+      }
+    }
   }
 
   override def onCreateOptionsMenu(menu: Menu): Boolean = {
@@ -90,9 +114,9 @@ class MainActivity extends AppCompatActivity {
       }
       if (tripIsBeingLogged) {
         sharedPreferences.edit().putString(LAST_LOCATION_KEY, gson.toJson(currentLocation)).putFloat(LAST_DISTANCE_KEY, currentDistance).apply()
-      } else {
+      } else if (!startLocationJson.isEmpty) {
         val startLocation: Location = gson.fromJson(startLocationJson.get, currentLocation.getClass)
-        TripHelper.saveTrip(database, startLocation, currentLocation, currentDistance)
+        TripHelper.saveTrip(database, startLocation, currentLocation, currentDistance, geocoder)
         sharedPreferences.edit().remove(START_LOCATION_KEY).remove(LAST_LOCATION_KEY).remove(LAST_DISTANCE_KEY).apply
         Snackbar.make(view, "Made new trip entry", Snackbar.LENGTH_LONG).show
       }

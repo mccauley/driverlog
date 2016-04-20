@@ -11,8 +11,6 @@ import org.joda.time.Duration
 import scala.math.BigDecimal.RoundingMode
 
 class TripAdapter(context: Context, query: LiveQuery) extends LiveQueryAdapter(context, query) {
-  private val ADDRESS_FORMAT = "%1$s, %2$s"
-  var geocoder: Geocoder = null
 
   override def getView(position: Int, convertView: View, parent: ViewGroup): View = {
     var view = convertView
@@ -30,8 +28,8 @@ class TripAdapter(context: Context, query: LiveQuery) extends LiveQueryAdapter(c
       val endLocationView = view.findViewById(R.id.end_location).asInstanceOf[TextView]
       durationView.setText(getDurationDescription(trip.duration))
       distanceView.setText(getDistanceDescription(trip.distance))
-      startLocationView.setText(getLocationDescription(view.getContext, trip.startLocation))
-      endLocationView.setText(getLocationDescription(view.getContext, trip.endLocation))
+      startLocationView.setText(trip.startDescription)
+      endLocationView.setText(trip.endDescription)
     }
     view
   }
@@ -52,20 +50,6 @@ class TripAdapter(context: Context, query: LiveQuery) extends LiveQueryAdapter(c
       durationDesc = durationDesc.concat(String.valueOf(minutes)).concat("m")
     }
     durationDesc.trim
-  }
-
-  private def getLocationDescription(context: Context, location: Location): String = {
-    if (geocoder == null) {
-      geocoder = new Geocoder(context)
-    }
-    val addresses: java.util.List[Address] = geocoder.getFromLocation(location.getLatitude, location.getLongitude, 1)
-    if (addresses != null && !addresses.isEmpty) {
-      val address = addresses.get(0)
-      if (address.getAddressLine(0) != null) {
-        return String.format(ADDRESS_FORMAT, address.getAddressLine(0), address.getAddressLine(1))
-      }
-    }
-    String.format(ADDRESS_FORMAT, String.valueOf(location.getLatitude), String.valueOf(location.getLongitude))
   }
 
 }
