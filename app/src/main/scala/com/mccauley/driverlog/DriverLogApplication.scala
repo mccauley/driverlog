@@ -6,6 +6,7 @@ import android.app.Application
 import android.util.Log
 import com.couchbase.lite.{CouchbaseLiteException, Database, Manager}
 import com.couchbase.lite.android.AndroidContext
+import com.squareup.leakcanary.LeakCanary
 
 class DriverLogApplication extends Application {
   var manager: Manager = null
@@ -25,6 +26,7 @@ class DriverLogApplication extends Application {
       case e: IOException => Log.e("DriverLogApplication", "Cannot create Manager instance", e)
       case e: CouchbaseLiteException => Log.e("DriverLogApplication", "Cannot open database", e)
     }
+    LeakCanary.install(this)
   }
 
   def getDatabase() = {

@@ -54,5 +54,8 @@ dependencies {
     compile "joda-time:joda-time:2.9.3"
     compile "com.google.code.gson:gson:2.6.2"
     compile 'com.couchbase.lite:couchbase-lite-android:1.1.0'
+    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.4-beta2'
+    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.4-beta2'
+    testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.4-beta2'
     androidTestCompile "com.android.support:multidex-instrumentation:1.0.1", { exclude module: "multidex" }
 }

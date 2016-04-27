@@ -22,7 +22,7 @@ class TripAdapter(context: Context, query: LiveQuery) extends LiveQueryAdapter(c
     val document = getItem(position).asInstanceOf[Document]
     val trip = TripHelper.createTrip(document)
     if (trip != null) {
-      val durationView = view.findViewById(R.id.duration).asInstanceOf[TextView]
+      val durationView = view.findViewById(R.id.trip_duration).asInstanceOf[TextView]
       val distanceView = view.findViewById(R.id.distance).asInstanceOf[TextView]
       val startLocationView = view.findViewById(R.id.start_location).asInstanceOf[TextView]
       val endLocationView = view.findViewById(R.id.end_location).asInstanceOf[TextView]

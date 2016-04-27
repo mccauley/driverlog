@@ -2,9 +2,10 @@ package com.mccauley.driverlog
 
 import android.app.Activity
 import android.content.Context
-import android.view.{ViewGroup, View}
+import android.util.Log
+import android.view.{View, ViewGroup}
 import android.widget.BaseAdapter
-import com.couchbase.lite.{Database, QueryEnumerator, LiveQuery}
+import com.couchbase.lite.{Database, LiveQuery, QueryEnumerator}
 
 class LiveQueryAdapter extends BaseAdapter {
   private var query: LiveQuery = null
@@ -44,8 +45,16 @@ class LiveQueryAdapter extends BaseAdapter {
   }
 
   def updateQueryToShowConflictingRevisions(event: Database.ChangeEvent) {
-    query.stop
-    enumerator = query.getRows
-    notifyDataSetChanged
+    context.asInstanceOf[Activity].runOnUiThread(new Runnable {
+      override def run(): Unit = {
+        Log.d("LiveQueryAdapter", "updateQueryToShow...")
+        query.stop
+        Log.d("LiveQueryAdapter", "stopped query")
+        enumerator = query.getRows
+        Log.d("LiveQueryAdapter", "got rows")
+        notifyDataSetChanged
+        Log.d("LiveQueryAdapter", "notified changed")
+      }
+    })
   }
 }
